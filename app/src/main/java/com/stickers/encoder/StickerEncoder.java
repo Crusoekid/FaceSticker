@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 
 import com.tenginekit.model.TenginekitPoint;
@@ -55,10 +56,24 @@ public class StickerEncoder extends DrawEncoder {
     void processResults(String tag, Object object1, Object object2) {
         if (!drawSticker || object1 == null) return;
         if (tag.equals("sticker")) {
-            trackedObjects = (Bitmap) object1;
+            Bitmap stick = (Bitmap) object1;
             List<TenginekitPoint> points = (List<TenginekitPoint>) object2;
-            marginLeft = points.get(69).X - 130;
-            marginTop = points.get(21).Y - 80;
+
+            int faceDiff = (int)(points.get(0).X - points.get(68).X);
+            int faceWidth = (int)(faceDiff * 1.4f);
+            int faceHeight = (int)(150.0f * 1.0f / 452.0f * faceWidth);
+
+            int width = stick.getWidth();
+            int height = stick.getHeight();
+
+            float scaleWidth = ((float) faceWidth) / width;
+            float scaleHeight = ((float) faceHeight) / height;
+            Matrix matrix = new Matrix();
+            matrix.postScale(scaleWidth, scaleHeight);
+            // 得到新的图片
+            trackedObjects = Bitmap.createBitmap(stick, 0, 0, width, height, matrix, true);
+            marginLeft = points.get(68).X -  faceDiff * 0.2f;
+            marginTop = points.get(21).Y - faceHeight* 0.8f;
         }
     }
 }
